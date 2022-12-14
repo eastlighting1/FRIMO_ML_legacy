@@ -56,4 +56,20 @@ We used [Huffon](https://github.com/Huffon/pytorch-sentiment-analysis-kor) to ch
 
 ## <b> How to Use </b>
 
-TBA
+All bat file you can use is in 'execution' folder.
+
+> start ai_reply_making.bat "(example string)"
+- Input Data : <b>String</b> ( User Chat )
+- Output Data : <b>String</b> ( AI Chat )
+
+<br>
+
+> start diary_update.bat "(example string)"
+- Input Data : <b>String</b> ( User's daily conversation data )
+- Output Data : <b>String</b> ( Summarized Data )
+
+<br>
+
+> start key_emo_making.bat "(example string)"
+- Input Data : <b>String</b> ( Summarized Data )
+- Output Data : <b>String</b> ( Keyword ) + <b>Integer</b> ( sentiment_pk )
