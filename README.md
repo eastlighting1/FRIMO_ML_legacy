@@ -112,7 +112,7 @@ FRIMO_ML is a repository for the parts of the FRIMO project that use machine lea
 
 <br> <br>
 
-## <b> References and Footnotes </b>
+## <b> References </b>
 
 <br>
 
