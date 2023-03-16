@@ -23,7 +23,7 @@ FRIMO_ML is a repository for the parts of the FRIMO project that use machine lea
     * Style-Change
         * Implement the ability to change the AI's speech style[^1].
         * Implemented Model : [KoBART](https://github.com/SKT-AI/KoBART)
-        * Folder Description : See [this doc]().
+        * Folder Description : See [this doc](https://github.com/Friend-for-Modern-people/FRIMO_ML/blob/main/Documentation/Style-Change%20Documentation).
     * Summarization
         * Implement the ability to summarize the content of a conversation.
         * Implemented Model : [KoBART](https://github.com/SKT-AI/KoBART)
@@ -31,7 +31,7 @@ FRIMO_ML is a repository for the parts of the FRIMO project that use machine lea
     * Emotion Recognition
         * Implement the ability to understand the emotion behind a conversation.
         * Implemented Model : [KoBERT]()
-        * Folder Description : See [this doc]().
+        * Folder Description : See [this doc](https://github.com/Friend-for-Modern-people/FRIMO_ML/blob/main/Documentation/Emotion-Recognition%20Documentation).
 
 * <b> Execution </b>
     > This is where the files to run the model are located.
