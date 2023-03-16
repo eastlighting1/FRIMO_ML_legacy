@@ -86,19 +86,23 @@ FRIMO_ML is a repository for the parts of the FRIMO project that use machine lea
     * [X] <b> Handle Requirements </b>
     * [ ] <b> Create a Structure to Re-train </b>
     * [ ] <b> Train repeatedly for enough reps </b>
+    
 * Style-Change
     * [X] <b> Implement Prototype </b>
     * [X] <b> Handle Requirements </b>
     * [X] <b> Apply the Corpus[^2] </b>
     * [ ] <b> Train repeatedly for enough reps </b>
+    
 * Summarization
     * [X] <b> Implement Prototype </b>
     * [X] <b> Handle Requirements </b>
     * [ ] <b> Apply the Corpus[^3] </b>
     * [ ] <b> Train repeatedly for enough reps </b>
+    
 * Keyword Extraction
     * [X] <b> Find Related Model</b>
     * [ ] <b> Find proper tokenizer </b>
+    
 * Emotion Recognition
     * [X] <b> Implement Prototype </b>
     * [X] <b> Handle Requirements </b>
