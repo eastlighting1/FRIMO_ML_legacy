@@ -2,6 +2,8 @@
 
 FRIMO_ML is a repository for the parts of the FRIMO project that use machine learning.
 
+Language : <b>en</b> | [kr](https://github.com/Friend-for-Modern-people/FRIMO_ML/blob/main/Documentation/README_ko.md)
+
 <br> <br>
 
 ## <b> Repository Structure </b>
