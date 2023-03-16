@@ -2,7 +2,7 @@
 
 FRIMO_ML은 FRIMO 프로젝트에서 머신러닝을 이용하는 부분들을 담은 레포지토리입니다.
 
-언어 : [영어](https://github.com/Friend-for-Modern-people/FRIMO_ML/blob/main/README.md) | 한국어()
+언어 : [영어](https://github.com/Friend-for-Modern-people/FRIMO_ML/blob/main/README.md) | 한국어
 
 <br> <br>
 
