@@ -68,7 +68,7 @@ Language : <b>en</b> | [kr](https://github.com/Friend-for-Modern-people/FRIMO_ML
 3. Change the style of the AI answer and display it to the user.
 
 4. Process the user's chat and the AI answer :
-    *Create a CSV file of the user's chats and use it to retrain the chat model
+    * Create a CSV file of the user's chats and use it to retrain the chat model
     * Create a txt file of the user's chats and pass the csv file to Firebase.
 
 5. Get the user's chats from Firebase as a tsv file and summarize them.
