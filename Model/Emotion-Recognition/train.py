@@ -1,54 +1,54 @@
-from transformers.optimization import get_cosine_schedule_with_warmup
-from torch.utils.data import Dataset, DataLoader
-from tqdm import tqdm, tqdm_notebook
-from transformers import BertModel
-from transformers import AdamW
-from torch import nn
-
-import torch.nn.functional as F
-import torch.optim as optim
-import gluonnlp as nlp
-import pandas as pd
-import numpy as np
+from kobert_transformers import get_kobert_model, get_distilkobert_model
+from kobert_transformers import get_tokenizer
 import torch
 import json
-
-from kobert import get_pytorch_kobert_model
-from kobert_tokenizer import KoBERTTokenizer
-tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
-bertmodel, vocab = get_pytorch_kobert_model()
+from torch import nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+import gluonnlp as nlp
+from gluonnlp import vocab as voc
+import numpy as np
+from tqdm import tqdm, tqdm_notebook
+import pandas as pd
+from transformers import AdamW
+from transformers.optimization import get_cosine_schedule_with_warmup
+from transformers import BertModel
+import argparse
+import pickle 
+import datetime
 
 device = torch.device("cuda:0")
 
-class BERTDataset(Dataset):
-    def __init__(self, dataset, sent_idx, label_idx, bert_tokenizer,vocab, max_len,
-                 pad, pair):
-   
-        transform = nlp.data.BERTSentenceTransform(
-            bert_tokenizer, max_seq_length=max_len,vocab=vocab, pad=pad, pair=pair)
-        
-        self.sentences = [transform([i[sent_idx]]) for i in dataset]
-        self.labels = [np.int32(i[label_idx]) for i in dataset]
+parser = argparse.ArgumentParser(description='Simsimi based on KoGPT-2')
 
-    def __getitem__(self, i):
-        return (self.sentences[i] + (self.labels[i], ))
-         
+parser.add_argument('--train_data',
+                    type=str,
+                    default=True,
+                    help='train data')
 
-    def __len__(self):
-        return (len(self.labels))
+parser.add_argument('--test_data',
+                    type=str,
+                    default=True,
+                    help='test data')
 
-training_file_path = "C:\Users\eastlighting1\git-zolzak\FRIMO_ML\Model\Emotion-Recognition\감성대화말뭉치(최종데이터)_Training.json"
-test_file_path = "C:\Users\eastlighting1\git-zolzak\FRIMO_ML\Model\Emotion-Recognition\감성대화말뭉치(최종데이터)_Validation.json"
+args = parser.parse_args()
+
+training_file_path = args.train_data
+test_file_path = args.test_data
 
 with open(training_file_path, 'r') as file:
     training_original = pd.json_normalize(json.load(file))
 
 with open(test_file_path, 'r') as file:
     test_original = pd.json_normalize(json.load(file))
-
+    
+tokens = tokenizer.get_vocab()
+vocab = nlp.vocab.BERTVocab(tokens)
 
 train = training_original[['profile.persona-id', 'talk.content.HS01', 'talk.content.HS02', 'talk.content.HS03', 'profile.emotion.type']]
 train.columns = ['id', 'sen1', 'sen2', 'sen3', 'emotion']
+
 
 test = test_original[['profile.persona-id', 'talk.content.HS01', 'talk.content.HS02', 'talk.content.HS03', 'profile.emotion.type']]
 test.columns = ['id', 'sen1', 'sen2', 'sen3', 'emotion']
@@ -56,24 +56,17 @@ test.columns = ['id', 'sen1', 'sen2', 'sen3', 'emotion']
 train_sentences = ["[CLS] " + str(s1) + " [SEP] " + str(s2) + " [SEP] " + str(s3) + " [SEP]" for s1, s2, s3 in zip(train.sen1, train.sen2, train.sen3)]
 test_sentences = ["[CLS] " + str(s1) + " [SEP] " + str(s2) + " [SEP] " + str(s3) + " [SEP]" for s1, s2, s3 in zip(test.sen1, test.sen2, test.sen3)]
 
-print(train_sentences[0])
-
 train_labels = list(train['emotion'].values)
-test_labels = list(test['emotion'].values)
+test_labels = list(train['emotion'].values)
 
-train_idx = {}
-test_idx = {}
-for l_train, l_test in zip(train_labels, test_labels) :
-  if l_train not in train_idx :
-    train_idx[l_train] = len(train_idx)
+idx = {}
+for l_train in train_labels :
+  if l_train not in idx :
+    idx[l_train] = len(idx)
 
-  if l_test not in test_idx:
-    test_idx[l_test] = len(test_idx)
 
-train_labels = [train_idx[x] for x in train_labels]
-train['emotion'] = train_labels
-test_labels = [test_idx[x] for x in test_labels]
-test['emotion'] = test_labels
+train_labels = train['emotion'].map(idx)
+test_labels = test['emotion'].map(idx)
 
 train_data_list = []
 for sentence, label in zip(train_sentences, train_labels)  :
@@ -91,11 +84,28 @@ for sentence, label in zip(test_sentences, test_labels)  :
 
     test_data_list.append(data)
 
+class BERTDataset(Dataset):
+    def __init__(self, dataset, sent_idx, label_idx, bert_tokenizer,vocab, max_len,
+                 pad, pair):
+   
+        transform = nlp.data.BERTSentenceTransform(
+            bert_tokenizer, max_seq_length=max_len,vocab=vocab, pad=pad, pair=pair)
+        
+        self.sentences = [transform([i[sent_idx]]) for i in dataset]
+        self.labels = [np.int32(i[label_idx]) for i in dataset]
+
+    def __getitem__(self, i):
+        return (self.sentences[i] + (self.labels[i], ))
+         
+
+    def __len__(self):
+        return (len(self.labels))
+    
 # Setting parameters
 max_len = 64
 batch_size = 64
 warmup_ratio = 0.1
-num_epochs = 5  
+num_epochs = 1  
 max_grad_norm = 1
 log_interval = 200
 learning_rate =  5e-5
@@ -137,7 +147,7 @@ class BERTClassifier(nn.Module):
         return self.classifier(out)
 
 #BERT 모델 불러오기
-model = BERTClassifier(bertmodel,  dr_rate=0.5).to(device)
+model = BERTClassifier(model,  dr_rate=0.5).to(device)
  
 #optimizer와 schedule 설정
 no_decay = ['bias', 'LayerNorm.weight']
@@ -200,42 +210,9 @@ for e in range(num_epochs):
         test_acc += calc_accuracy(out, label)
     print("epoch {} test acc {}".format(e+1, test_acc / (batch_id+1)))
     test_history.append(test_acc / (batch_id+1))
+   
+current_date = datetime.date.today()
+pickle_name = "model_" + current_date.strftime("%Y%m%d") + ".pickle"
 
-    def predict(predict_sentence):
-
-  data = [predict_sentence, '0']
-  dataset_another = [data]
-
-  another_test = BERTDataset(dataset_another, 0, 1, tok, vocab, max_len, True, False)
-  test_dataloader = torch.utils.data.DataLoader(another_test, batch_size=batch_size, num_workers=5)
-    
-  model.eval()
-
-  for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(test_dataloader):
-    token_ids = token_ids.long().to(device)
-    segment_ids = segment_ids.long().to(device)
-
-    valid_length= valid_length
-    label = label.long().to(device)
-
-    out = model(token_ids, valid_length, segment_ids)
-
-
-    test_eval=[]
-    for i in out:
-      logits=i
-      logits = logits.detach().cpu().numpy()
-
-      if np.argmax(logits) < 10 :
-        test_eval.append("E" + str(np.argmax(logits) + 10))
-
-
-    print(">> 입력하신 내용에서 " + test_eval[0] + "이 느껴집니다.")
-
-end = 1
-while end == 1 :
-    sentence = input("하고싶은 말을 입력해주세요 : ")
-    if sentence == "0" :
-        break
-    predict(sentence)
-    print("\n")
+with open(pickle_name,'wb') as fw:
+    pickle.dump(model, fw)
