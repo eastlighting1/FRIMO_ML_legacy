@@ -43,6 +43,8 @@ with open(training_file_path, 'r') as file:
 with open(test_file_path, 'r') as file:
     test_original = pd.json_normalize(json.load(file))
     
+model = get_kobert_model()
+tokenizer = get_tokenizer()
 tokens = tokenizer.get_vocab()
 vocab = nlp.vocab.BERTVocab(tokens)
 
