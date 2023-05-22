@@ -215,18 +215,15 @@ for e in range(num_epochs):
     test_history.append(test_acc / (batch_id+1))
    
 
-#Store Pickles
-folder_path = os.path.join(os.path.dirname(__file__), '.', 'pickle')
+#Store pt
+folder_path = os.path.join(os.path.dirname(__file__), '.', 'pt')
 
 current_date = datetime.date.today()
-pickle_name = "model_" + current_date.strftime("%Y%m%d") + ".pickle"
+pt_name = "model_" + current_date.strftime("%Y%m%d") + ".pt"
 
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
-# pickle 파일 경로 설정
-pickle_path = os.path.join(folder_path, pickle_name)
+pickle_path = os.path.join(folder_path, pt_name)
 
-# pickle 파일 생성
-with open(pickle_path, 'wb') as fw:
-    pickle.dump(model, fw)
+torch.save(model.state_dict(), pickle_path)
