@@ -8,6 +8,7 @@ import gluonnlp as nlp
 from gluonnlp import vocab as voc
 import numpy as np
 from transformers import BertModel
+import argparse
 
 
 device = torch.device("cuda:0")
@@ -25,8 +26,16 @@ max_grad_norm = 1
 log_interval = 200
 learning_rate =  5e-5
 
-with open('model_210519.pickle', 'rb') as f: 
-    model = pickle.load(f)
+parser = argparse.ArgumentParser(description='Simsimi based on KoGPT-2')
+
+parser.add_argument('--pt_path',
+                    type=str,
+                    default=True,
+                    help='location of pt file')
+
+args = parser.parse_args()
+
+pt_path = args.pt_path
 
 class BERTDataset(Dataset):
     def __init__(self, dataset, sent_idx, label_idx, bert_tokenizer,vocab, max_len,
@@ -45,6 +54,39 @@ class BERTDataset(Dataset):
     def __len__(self):
         return (len(self.labels))
 
+class BERTClassifier(nn.Module):
+    def __init__(self,
+                 bert,
+                 hidden_size = 768,
+                 num_classes=60,   ##클래스 수 조정##
+                 dr_rate=None,
+                 params=None):
+        super(BERTClassifier, self).__init__()
+        self.bert = bert
+        self.dr_rate = dr_rate
+                 
+        self.classifier = nn.Linear(hidden_size , num_classes)
+        if dr_rate:
+            self.dropout = nn.Dropout(p=dr_rate)
+    
+    def gen_attention_mask(self, token_ids, valid_length):
+        attention_mask = torch.zeros_like(token_ids)
+        for i, v in enumerate(valid_length):
+            attention_mask[i][:v] = 1
+        return attention_mask.float()
+
+    def forward(self, token_ids, valid_length, segment_ids):
+        attention_mask = self.gen_attention_mask(token_ids, valid_length)
+        
+        _, pooler = self.bert(input_ids = token_ids, token_type_ids = segment_ids.long(), attention_mask = attention_mask.float().to(token_ids.device),return_dict=False)
+        if self.dr_rate:
+            out = self.dropout(pooler)
+        return self.classifier(out)
+
+#BERT 모델 불러오기
+model = get_kobert_model()
+model = BERTClassifier(model,  dr_rate=0.5).to(device)
+model.load_state_dict(torch.load(pt_path))
 
 def predict(predict_sentence):
 
