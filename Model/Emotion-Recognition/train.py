@@ -17,6 +17,7 @@ from transformers import BertModel
 import argparse
 import pickle 
 import datetime
+import os
 
 device = torch.device("cuda:0")
 
@@ -213,8 +214,19 @@ for e in range(num_epochs):
     print("epoch {} test acc {}".format(e+1, test_acc / (batch_id+1)))
     test_history.append(test_acc / (batch_id+1))
    
+
+#Store Pickles
+folder_path = os.path.join(os.path.dirname(__file__), '.', 'pickle')
+
 current_date = datetime.date.today()
 pickle_name = "model_" + current_date.strftime("%Y%m%d") + ".pickle"
 
-with open(pickle_name,'wb') as fw:
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
+# pickle 파일 경로 설정
+pickle_path = os.path.join(folder_path, pickle_name)
+
+# pickle 파일 생성
+with open(pickle_path, 'wb') as fw:
     pickle.dump(model, fw)
