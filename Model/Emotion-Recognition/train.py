@@ -33,10 +33,16 @@ parser.add_argument('--test_data',
                     default=True,
                     help='test data')
 
+parser.add_argument('--num_epoch',
+                    type=str,
+                    default=True,
+                    help='the number of epoch')
+
 args = parser.parse_args()
 
 training_file_path = args.train_data
 test_file_path = args.test_data
+num_epoch = args.num_epoch
 
 with open(training_file_path, 'r') as file:
     training_original = pd.json_normalize(json.load(file))
@@ -108,7 +114,7 @@ class BERTDataset(Dataset):
 max_len = 64
 batch_size = 64
 warmup_ratio = 0.1
-num_epochs = 1  
+num_epochs = num_epoch
 max_grad_norm = 1
 log_interval = 200
 learning_rate =  5e-5
